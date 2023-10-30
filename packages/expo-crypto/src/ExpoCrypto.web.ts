@@ -46,6 +46,29 @@ export default {
   digestAsync(algorithm: AlgorithmIdentifier, data: ArrayBuffer): Promise<ArrayBuffer> {
     return getCrypto().subtle.digest(algorithm, data);
   },
+  async derivePBKDF2(algorithm: AlgorithmIdentifier, key: ArrayBuffer, salt: ArrayBuffer, iterations: number, length: number): Promise<ArrayBuffer> {
+    if (!crypto.subtle) {
+      throw new CodedError(
+        'ERR_CRYPTO_UNAVAILABLE',
+        'Access to the WebCrypto API is restricted to secure origins (https).'
+      );
+    }
+
+    // Only subset of algorithms are supported
+    if (algorithm !== 'SHA-1' && algorithm !== 'SHA-256' && algorithm !== 'SHA-512' && algorithm !== 'SHA-384') {
+      throw new CodedError(
+        'ERR_CRYPTO_UNSUPPORTED_ALGORITHM',
+        'Unsupported algorithm provided.'
+      );
+    }
+
+    // Import PBKDF2 base key
+    const importedKey = await crypto.subtle.importKey('raw', key, 'PBKDF2', false, ['deriveBits']);
+
+    // Derive bits
+    let bits = length * 8; /* bit/byte variants are confusing and only multiplies of 8 works everywhere */
+    return crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations, hash: algorithm }, importedKey, bits);
+  }
 };
 
 function hexString(buffer: ArrayBuffer): string {

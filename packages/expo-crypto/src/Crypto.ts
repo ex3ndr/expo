@@ -223,3 +223,16 @@ export function digest(algorithm: CryptoDigestAlgorithm, data: BufferSource): Pr
     }
   });
 }
+
+/**
+ * The `derivePBKDF2()` method of `Crypto` derives a key of given length from the supplied `key`, `salt`, `iterations` and `algorithm`.
+ */
+export function derviePBKDF2(opts: { algorithm: CryptoDigestAlgorithm, key: BufferSource, salt: BufferSource, iterations: number, length: number }): Promise<ArrayBuffer> {
+  return new Promise((resolve, reject) => {
+    try {
+      resolve(ExpoCrypto.derivePBKDF2(opts.algorithm, opts.key, opts.salt, opts.iterations, opts.length));
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
